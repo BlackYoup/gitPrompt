@@ -77,8 +77,16 @@ showGitStashed (){
 showUnpushedCommits (){
   currentBranch=$(showGitBranch)
   if [[ -d .git && $currentBranch != "" ]]; then
-      allCommits=$(git log $distantRepoName/$currentBranch..$currentBranch > /dev/null 2>&1)
+      remotes=$(git remote)
+
+      if [ "$remotes" != "" ]; then
+	allCommits=$(git log $distantRepoName/$currentBranch..$currentBranch > /dev/null 2>&1)
+      else
+	allCommits=$(git log)
+      fi
+
       nbrCommits=0
+      
       for commit in $allCommits; do
 	if [ $(echo $commit | cut -d' ' -f1) = "commit" ]; then
 	  nbrCommits=$((nbrCommits+1))
@@ -108,7 +116,7 @@ showReadyToCommit (){
 }
 
 showBehindCommits () {
-  if [ -f /tmp/gitPrompt.save ]; then
+  if [ -d .git ] && [ -f /tmp/gitPrompt.save ] && [ "$(git remote)" != "" ]; then
     last=$(cat /tmp/gitPrompt.save)
     curTime=$(($(date +%s)-$refreshGitFetch))
     
@@ -122,7 +130,8 @@ showBehindCommits () {
   fi
 
   currentBranch=$(showGitBranch)
-  if [[ -d .git && $currentBranch != "" ]]; then
+
+  if [ -d .git ] && [ $currentBranch != "" ] && [ "$remotes" != "" ]; then
     allBehinds=$(git log $currentBranch..$distantRepoName/$currentBranch > /dev/null 2>&1)
     nbrBehind=0
     for commit in $allBehinds; do
