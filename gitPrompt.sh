@@ -4,7 +4,7 @@ export PS1=$PS1'\001\e[1;32m\002$(showUnpushedCommits)'
 export PS1=$PS1'\001\e[1;31m\002$(showBehindCommits)'
 export PS1=$PS1'\001\e[1;36m\002$(promptParenthesis "end")'
 export PS1=$PS1'\001\e[1;31m\002$(showGitUnCommited)'
-export PS1=$PS1'\001\e[1;32m\002$(showAddedFiles)'
+export PS1=$PS1'\001\e[1;32m\002$(showReadyToCommit)'
 export PS1=$PS1'\001\e[1;33m\002$(showGitStashed)'
 
 refreshGitFetch=3600
@@ -33,15 +33,28 @@ showGitBranch () {
 showGitUnCommited (){
   if [ -d .git ]; then
     status=$(git status --porcelain)
-    nbrDurty=0
-    for file in $status; do
-      firstLetters=${file:0:2}
-      if [[ $firstLetters = " M" || $firstLetters = "??" ]]; then
-	nbrDurty=$((nbrDurty+1))
+    modified=$(echo "$status" | cut -d' ' -f2)
+    added=$(echo "$status" | cut -d' ' -f1)
+
+    nbrModified=0
+    nbrAdded=0
+
+    for mod in $modified; do
+      if [ $mod = "M" ]; then
+	nbrModified=$((nbrModified+1))
       fi
     done
 
-    if [ $nbrDurty -gt 0 ]; then
+
+    if [ $nbrModified -eq 0 ]; then
+      for ad in $added; do
+	if [ $ad = "??" ] || [ $ad = "MM" ]; then
+	  nbrAdded=$((nbrAdded+1))
+	fi
+      done
+    fi
+
+    if [ $nbrModified -gt 0 ] || [ $nbrAdded -gt 0 ] ; then
       durty="*"
     else
       durty=""
@@ -64,7 +77,7 @@ showGitStashed (){
 showUnpushedCommits (){
   currentBranch=$(showGitBranch)
   if [[ -d .git && $currentBranch != "" ]]; then
-      allCommits=$(git log $distantRepoName/$currentBranch..$currentBranch)
+      allCommits=$(git log $distantRepoName/$currentBranch..$currentBranch > /dev/null 2>&1)
       nbrCommits=0
       for commit in $allCommits; do
 	if [ $(echo $commit | cut -d' ' -f1) = "commit" ]; then
@@ -77,18 +90,18 @@ showUnpushedCommits (){
   fi
 }
 
-showAddedFiles (){
+showReadyToCommit (){
   currentBranch=$(showGitBranch)
   if [[ -d .git && $currentBranch != "" ]]; then
-    status=$(git status --porcelain)
-    nbrAdded=0
-    for file in $status; do
-      if [ ${file:0:1} = "M" ]; then
-	nbrAdded=$((nbrAdded+1))
+    status=$(git status --porcelain | cut -d' ' -f1)
+    nbrReady=0
+    for stat in $status; do
+      if [ $stat = "M" ] || [ $stat = "MM" ] ; then
+       nbrReady=$((nbrReady+1))
       fi
     done
 
-    if [ $nbrAdded -gt 0 ]; then
+    if [ $nbrReady -gt 0 ]; then
       echo "+"
     fi
   fi
@@ -110,7 +123,7 @@ showBehindCommits () {
 
   currentBranch=$(showGitBranch)
   if [[ -d .git && $currentBranch != "" ]]; then
-    allBehinds=$(git log $currentBranch..$distantRepoName/$currentBranch)
+    allBehinds=$(git log $currentBranch..$distantRepoName/$currentBranch > /dev/null 2>&1)
     nbrBehind=0
     for commit in $allBehinds; do
       if [ $(echo $commit | cut -d' ' -f1) = "commit" ]; then
