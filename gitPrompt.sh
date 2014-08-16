@@ -80,18 +80,17 @@ showUnpushedCommits (){
       remotes=$(git remote)
 
       if [ "$remotes" != "" ]; then
-	allCommits=$(git log $distantRepoName/$currentBranch..$currentBranch > /dev/null 2>&1)
+	allCommits=$(git log $distantRepoName/$currentBranch..$currentBranch --format="%h" | cut -d' ' -f1)
       else
-	allCommits=$(git log)
+	allCommits=$(git log --format="%h" | cut -d' ' -f1)
       fi
 
       nbrCommits=0
       
       for commit in $allCommits; do
-	if [ $(echo $commit | cut -d' ' -f1) = "commit" ]; then
-	  nbrCommits=$((nbrCommits+1))
-	fi
+	nbrCommits=$((nbrCommits+1))
       done
+
       if [ $nbrCommits -gt 0 ]; then
 	echo "↑$nbrCommits"
       fi
@@ -131,14 +130,13 @@ showBehindCommits () {
 
   currentBranch=$(showGitBranch)
 
-  if [ -d .git ] && [ $currentBranch != "" ] && [ "$remotes" != "" ]; then
-    allBehinds=$(git log $currentBranch..$distantRepoName/$currentBranch > /dev/null 2>&1)
+  if [ -d .git ] && [ $currentBranch != "" ] && [ "$(git remote)" != "" ]; then
+    allBehinds=$(git log $currentBranch..$distantRepoName/$currentBranch --format="%h" | cut -d' ' -f1)
     nbrBehind=0
     for commit in $allBehinds; do
-      if [ $(echo $commit | cut -d' ' -f1) = "commit" ]; then
-	nbrBehind=$((nbrBehind+1))
-      fi
+      nbrBehind=$((nbrBehind+1))
     done
+
     if [ $nbrBehind -gt 0 ]; then
       echo "↓$nbrBehind"
     fi
