@@ -39,3 +39,8 @@ By default, functions will use ``origin`` for the distant repository name. You c
 These functions use the git commands output and parse them to extract values. It rely on ``/tmp/gitPrompt.save`` which save the timestamp when it fetch the origin.
 
 It uses the ``git log origin/branch..branch`` or ``git log branch..origin/branch`` to check ahead or behinds commits. (origin or whatever the value you setted). See [#Origin](#Origin)
+
+## TODO
+
++ Display prompt in subfolders
++ Fetch origin independently of repos

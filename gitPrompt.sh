@@ -80,9 +80,14 @@ showUnpushedCommits (){
   currentBranch=$(showGitBranch)
   if [[ -d .git && $currentBranch != "" ]]; then
       remotes=$(git remote)
+      remoteExist=$(remoteBranchExists)
 
       if [ "$remotes" != "" ]; then
-	allCommits=$(git log $distantRepoName/$currentBranch..$currentBranch --format="%h" | cut -d' ' -f1)
+	if [ $(remoteBranchExists) = "yes" ]; then
+	  allCommits=$(git log $distantRepoName/$currentBranch..$currentBranch --format="%h" 2>/dev/null | cut -d' ' -f1)
+	else
+	  allCommits=$(git log $(git log --format="%P" | sed -n 1p)..HEAD --format="%h" )
+	fi
       else
 	allCommits=$(git log --format="%h" | cut -d' ' -f1)
       fi
@@ -108,7 +113,7 @@ showReadyToCommit (){
 
     for stat in $status; do
       if [ $stat = "M" ] || [ $stat = "MM" ] ; then
-       nbrReady="yes"
+       isReady="yes"
        break
       fi
     done
@@ -135,8 +140,8 @@ showBehindCommits () {
 
   currentBranch=$(showGitBranch)
 
-  if [ -d .git ] && [ $currentBranch != "" ] && [ "$(git remote)" != "" ]; then
-    allBehinds=$(git log $currentBranch..$distantRepoName/$currentBranch --format="%h" | cut -d' ' -f1)
+  if [ -d .git ] && [ $currentBranch != "" ] && [ "$(git remote)" != "" ] && [ $(remoteBranchExists) = "yes" ]; then
+    allBehinds=$(git log $currentBranch..$distantRepoName/$currentBranch --format="%h" 2>/dev/null | cut -d' ' -f1)
     nbrBehind=0
     for commit in $allBehinds; do
       nbrBehind=$((nbrBehind+1))
@@ -146,4 +151,19 @@ showBehindCommits () {
       echo "↓$nbrBehind"
     fi
   fi
+}
+
+remoteBranchExists (){
+  remoteBranch=$(git branch -r)
+  curBranch=$(showGitBranch)
+  ret="no"
+
+  for branch in $remoteBranch; do
+    if [ $branch = $distantRepoName"/"$curBranch ]; then
+      ret="yes"
+      break
+    fi
+  done
+
+  echo $ret
 }
