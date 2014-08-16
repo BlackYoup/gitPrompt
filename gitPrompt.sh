@@ -36,25 +36,27 @@ showGitUnCommited (){
     modified=$(echo "$status" | cut -d' ' -f2)
     added=$(echo "$status" | cut -d' ' -f1)
 
-    nbrModified=0
-    nbrAdded=0
+    isModified="no"
+    isAdded="no"
 
     for mod in $modified; do
       if [ $mod = "M" ]; then
-	nbrModified=$((nbrModified+1))
+	isModified="yes"
+	break
       fi
     done
 
 
-    if [ $nbrModified -eq 0 ]; then
+    if [ $isModified = "no" ]; then
       for ad in $added; do
 	if [ $ad = "??" ] || [ $ad = "MM" ]; then
-	  nbrAdded=$((nbrAdded+1))
+	  isAdded="yes"
+	  break
 	fi
       done
     fi
 
-    if [ $nbrModified -gt 0 ] || [ $nbrAdded -gt 0 ] ; then
+    if [ $isModified = "yes" ] || [ $isAdded = "yes" ] ; then
       durty="*"
     else
       durty=""
@@ -101,14 +103,17 @@ showReadyToCommit (){
   currentBranch=$(showGitBranch)
   if [[ -d .git && $currentBranch != "" ]]; then
     status=$(git status --porcelain | cut -d' ' -f1)
-    nbrReady=0
+
+    isReady="no"
+
     for stat in $status; do
       if [ $stat = "M" ] || [ $stat = "MM" ] ; then
-       nbrReady=$((nbrReady+1))
+       nbrReady="yes"
+       break
       fi
     done
 
-    if [ $nbrReady -gt 0 ]; then
+    if [ $isReady = "yes" ]; then
       echo "+"
     fi
   fi
