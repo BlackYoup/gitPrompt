@@ -10,8 +10,16 @@ export PS1=$PS1'\001\e[1;33m\002$(showGitStashed)'
 refreshGitFetch=3600
 distantRepoName="origin"
 
+isGit() {
+  if [ "$(git rev-parse --git-dir 2>/dev/null)" != "" ]; then
+    echo "yes"
+  else
+    echo "no"
+  fi
+}
+
 promptParenthesis () {
-  if [ -d .git ]; then
+  if [ $(isGit) = "yes" ]; then
     if [ $1 = "start" ]; then
       echo "("
     else
@@ -21,7 +29,7 @@ promptParenthesis () {
 }
 
 showGitBranch () {
-  if [ -d .git ]; then
+  if [ $(isGit) = "yes" ]; then
     branch=$(git branch 2>/dev/null| sed -n '/^\*/s/^\* //p')
   else
     branch=""
@@ -31,7 +39,7 @@ showGitBranch () {
 }
 
 showGitUnCommited (){
-  if [ -d .git ]; then
+  if [ $(isGit) = "yes" ]; then
     status=$(git status --porcelain)
     modified=$(echo "$status" | cut -d' ' -f2)
     added=$(echo "$status" | cut -d' ' -f1)
@@ -67,7 +75,7 @@ showGitUnCommited (){
 
 showGitStashed (){
   branch=$(showGitBranch)
-  if [[ -d .git && $branch != "" && $(git stash list | grep $branch | tail -n1) != "" ]]; then
+  if [[ $(isGit) = "yes" && $branch != "" && $(git stash list | grep $branch | tail -n1) != "" ]]; then
     stashed=" ~"
   else
     stashed=""
@@ -78,7 +86,7 @@ showGitStashed (){
 
 showUnpushedCommits (){
   currentBranch=$(showGitBranch)
-  if [[ -d .git && $currentBranch != "" ]]; then
+  if [[ $(isGit) = "yes" && $currentBranch != "" ]]; then
       remotes=$(git remote)
       remoteExist=$(remoteBranchExists)
 
@@ -106,7 +114,7 @@ showUnpushedCommits (){
 
 showReadyToCommit (){
   currentBranch=$(showGitBranch)
-  if [[ -d .git && $currentBranch != "" ]]; then
+  if [[ $(isGit) = "yes" && $currentBranch != "" ]]; then
     status=$(git status --porcelain | cut -d' ' -f1)
 
     isReady="no"
@@ -125,7 +133,7 @@ showReadyToCommit (){
 }
 
 showBehindCommits () {
-  if [ -d .git ] && [ -f /tmp/gitPrompt.save ] && [ "$(git remote)" != "" ]; then
+  if [ $(isGit) = "yes" ] && [ -f /tmp/gitPrompt.save ] && [ "$(git remote)" != "" ]; then
     last=$(cat /tmp/gitPrompt.save)
     curTime=$(($(date +%s)-$refreshGitFetch))
     
@@ -140,7 +148,7 @@ showBehindCommits () {
 
   currentBranch=$(showGitBranch)
 
-  if [ -d .git ] && [ $currentBranch != "" ] && [ "$(git remote)" != "" ] && [ $(remoteBranchExists) = "yes" ]; then
+  if [ $(isGit) = "yes" ] && [ $currentBranch != "" ] && [ "$(git remote)" != "" ] && [ $(remoteBranchExists) = "yes" ]; then
     allBehinds=$(git log $currentBranch..$distantRepoName/$currentBranch --format="%h" 2>/dev/null | cut -d' ' -f1)
     nbrBehind=0
     for commit in $allBehinds; do

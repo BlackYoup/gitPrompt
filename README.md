@@ -42,5 +42,4 @@ It uses the ``git log origin/branch..branch`` or ``git log branch..origin/branch
 
 ## TODO
 
-+ Display prompt in subfolders
 + Fetch origin independently of repos
