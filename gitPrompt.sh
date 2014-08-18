@@ -133,17 +133,35 @@ showReadyToCommit (){
 }
 
 showBehindCommits () {
-  if [ $(isGit) = "yes" ] && [ -f /tmp/gitPrompt.save ] && [ "$(git remote)" != "" ]; then
-    last=$(cat /tmp/gitPrompt.save)
-    curTime=$(($(date +%s)-$refreshGitFetch))
-    
-    if [ $curTime -gt $last ]; then
+  if [ $(isGit) = "yes" ]; then
+    path=$(pwd)
+    if [ -f /tmp/gitPrompt.save ] && [ "$(git remote)" != "" ]; then
+      saveContent="$(cat /tmp/gitPrompt.save | cut -d' ' -f1)"
+      curTime=$(($(date +%s)-$refreshGitFetch))
+
+      last=0
+      index=0
+
+      for repo in $saveContent; do
+	index=$((index+1))
+	if [ "$(echo $repo | cut -d':' -f1)" = $path ]; then
+	  last=$(echo $repo | cut -d':' -f2)
+	  break
+	fi
+      done
+
+      if [ $curTime -gt $last ]; then
+	$(git fetch > /dev/null 2>&1)
+	echo "fetch"
+	if [ $last -gt 0 ]; then
+	  $(sed -i "${index}d" /tmp/gitPrompt.save)
+	fi
+	$(echo "$path:$(date +%s)" >> /tmp/gitPrompt.save)
+      fi
+    else
       $(git fetch > /dev/null 2>&1)
-      $(echo "$(date +%s)" > /tmp/gitPrompt.save)
+      $(echo "$path:$(date +%s)" >> /tmp/gitPrompt.save)
     fi
-  else
-    $(git fetch > /dev/null 2>&1)
-    $(echo "$(date +%s)" > /tmp/gitPrompt.save)
   fi
 
   currentBranch=$(showGitBranch)
