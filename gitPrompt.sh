@@ -94,7 +94,7 @@ showUnpushedCommits (){
 	if [ $(remoteBranchExists) = "yes" ]; then
 	  allCommits=$(git log $distantRepoName/$currentBranch..$currentBranch --format="%h" 2>/dev/null | cut -d' ' -f1)
 	else
-	  allCommits=$(git log $(git log --format="%P" | sed -n 1p)..HEAD --format="%h" )
+	  allCommits=$(git log master..HEAD --format="%h" )
 	fi
       else
 	allCommits=$(git log --format="%h" | cut -d' ' -f1)
