@@ -49,18 +49,17 @@ showGitUnCommited (){
 
     for mod in $modified; do
       if [ $mod = "M" ]; then
-	isModified="yes"
-	break
+        isModified="yes"
+        break
       fi
     done
 
-
     if [ $isModified = "no" ]; then
       for ad in $added; do
-	if [ $ad = "??" ] || [ $ad = "MM" ]; then
-	  isAdded="yes"
-	  break
-	fi
+        if [ $ad = "??" ] || [ $ad = "MM" ]; then
+          isAdded="yes"
+          break
+        fi
       done
     fi
 
@@ -80,7 +79,7 @@ showGitStashed (){
   else
     stashed=""
   fi
-  
+
   echo $stashed
 }
 
@@ -91,23 +90,23 @@ showUnpushedCommits (){
       remoteExist=$(remoteBranchExists)
 
       if [ "$remotes" != "" ]; then
-	if [ $(remoteBranchExists) = "yes" ]; then
-	  allCommits=$(git log $distantRepoName/$currentBranch..$currentBranch --format="%h" 2>/dev/null | cut -d' ' -f1)
-	else
-	  allCommits=$(git log master..HEAD --format="%h" )
-	fi
+        if [ $(remoteBranchExists) = "yes" ]; then
+          allCommits=$(git log $distantRepoName/$currentBranch..$currentBranch --format="%h" 2>/dev/null | cut -d' ' -f1)
+        else
+          allCommits=$(git log master..HEAD --format="%h" )
+        fi
       else
-	allCommits=$(git log --format="%h" | cut -d' ' -f1)
+        allCommits=$(git log --format="%h" | cut -d' ' -f1)
       fi
 
       nbrCommits=0
-      
+
       for commit in $allCommits; do
-	nbrCommits=$((nbrCommits+1))
+        nbrCommits=$((nbrCommits+1))
       done
 
       if [ $nbrCommits -gt 0 ]; then
-	echo "↑$nbrCommits"
+        echo "↑$nbrCommits"
       fi
   fi
 }
@@ -121,8 +120,8 @@ showReadyToCommit (){
 
     for stat in $status; do
       if [ $stat = "M" ] || [ $stat = "MM" ] ; then
-       isReady="yes"
-       break
+        isReady="yes"
+        break
       fi
     done
 
@@ -144,18 +143,18 @@ showBehindCommits () {
 
       for repo in $saveContent; do
 	index=$((index+1))
-	if [ "$(echo $repo | cut -d':' -f1)" = $path ]; then
-	  last=$(echo $repo | cut -d':' -f2)
-	  break
-	fi
+        if [ "$(echo $repo | cut -d':' -f1)" = $path ]; then
+          last=$(echo $repo | cut -d':' -f2)
+          break
+        fi
       done
 
       if [ $curTime -gt $last ]; then
-	$(git fetch > /dev/null 2>&1)
-	if [ $last -gt 0 ]; then
-	  $(sed -i "${index}d" /tmp/gitPrompt.save)
-	fi
-	$(echo "$path:$(date +%s)" >> /tmp/gitPrompt.save)
+        $(git fetch > /dev/null 2>&1)
+        if [ $last -gt 0 ]; then
+          $(sed -i "${index}d" /tmp/gitPrompt.save)
+        fi
+        $(echo "$path:$(date +%s)" >> /tmp/gitPrompt.save)
       fi
     else
       $(git fetch > /dev/null 2>&1)
