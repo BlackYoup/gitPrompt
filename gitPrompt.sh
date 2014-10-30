@@ -75,7 +75,7 @@ showGitUnCommited (){
 
 showGitStashed (){
   branch=$(showGitBranch)
-  if [[ $(isGit) = "yes" && $branch != "" && $(git stash list | grep $branch | tail -n1) != "" ]]; then
+  if [[ $(isGit) = "yes" && $branch != "" && $(git stash list | grep "$branch" | tail -n1) != "" ]]; then
     stashed=" ~"
   else
     stashed=""
@@ -179,11 +179,11 @@ showBehindCommits () {
 
 remoteBranchExists (){
   remoteBranch=$(git branch -r)
-  curBranch=$(showGitBranch)
+  curBranch="$(showGitBranch)"
   ret="no"
 
   for branch in $remoteBranch; do
-    if [ $branch = $distantRepoName"/"$curBranch ]; then
+    if [ $branch = $distantRepoName"/""$curBranch" ]; then
       ret="yes"
       break
     fi
