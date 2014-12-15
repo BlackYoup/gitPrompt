@@ -133,7 +133,12 @@ showReadyToCommit (){
 
 showBehindCommits () {
   if [ $(isGit) = "yes" ]; then
-    path=$(pwd)
+    pathFromGit=$(git rev-parse --git-dir)
+    if [ "$pathFromGit" = ".git" ]; then
+      path=$(pwd)"/.git"
+    else
+      path=$pathFromGit
+    fi
     if [ -f /tmp/gitPrompt.save ] && [ "$(git remote)" != "" ]; then
       saveContent="$(cat /tmp/gitPrompt.save | cut -d' ' -f1)"
       curTime=$(($(date +%s)-$refreshGitFetch))
